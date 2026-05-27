@@ -1,0 +1,33 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Local editor/project metadata and IDE files
+.cursor/
+.vscode/
+.idea/
+.fleet/
+.vs/
+.history/
+
+# OS / tooling noise
+.DS_Store
+
+# Local docs drafts (not committed by default)
+docs/
+
+# Cursor / assistant config files
+.cursorrules
+.cursorignore
+CLAUDE.md
+
+# Secrets (Infisical is source of truth)
+.env
+.env.*
