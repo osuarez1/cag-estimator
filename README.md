@@ -44,22 +44,45 @@ This repository uses `uv`.
 uv sync
 ```
 
-`.env` and `.env.example` are intentionally empty in this scaffold. If you want to call a real provider, put
-environment variables in `.env` (the file is gitignored).
+Configuration is loaded from the process environment. Use **either** Infisical or a local `.env` file in development; production/CI typically uses Infisical. See [`.env.example`](.env.example) for all variable names (no secret values).
 
-Supported variables:
+### Option A — Infisical (development or production)
 
-- `LLM_PROVIDER`: `openai` | `anthropic` | `gemini`
-- `OPENAI_API_KEY`
-- `ANTHROPIC_API_KEY`
-- `GOOGLE_API_KEY`
-- `LLM_MODEL` (optional; per-provider defaults are used if omitted)
+```bash
+infisical run --env=dev -- uv run uvicorn app.main:app --reload
+```
+
+Use the Infisical environment that matches your deployment (`dev`, `staging`, `prod`, etc.). Secret keys must match `.env.example`.
+
+### Option B — Local `.env`
+
+```bash
+cp .env.example .env
+# Edit .env with your API keys (file is gitignored)
+uv run uvicorn app.main:app --reload
+```
+
+### Environment variables
+
+| Variable | Default | Notes |
+|----------|---------|--------|
+| `LLM_PROVIDER` | `openai` | `openai`, `anthropic`, or `gemini` |
+| `LLM_MODEL` | `gpt-4o-mini` | Per-provider defaults apply if not set in env |
+| `OPENAI_API_KEY` | — | Required when `LLM_PROVIDER=openai` |
+| `ANTHROPIC_API_KEY` | — | Required when `LLM_PROVIDER=anthropic` |
+| `GOOGLE_API_KEY` | — | Required when `LLM_PROVIDER=gemini` |
+| `APP_ENV` | `development` | Environment label |
+| `LOG_LEVEL` | `DEBUG` | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` |
+
+Process environment overrides `.env` when both define the same key.
 
 ## Run
 
 ```bash
 uv run uvicorn app.main:app --reload
 ```
+
+(Wrap with `infisical run` when using Infisical.)
 
 ## Contributing
 
@@ -69,4 +92,3 @@ or PR descriptions.
 
 Architectural changes must update [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) in the same change set
 (see `CLAUDE.md` and `.cursorrules`).
-

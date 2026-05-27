@@ -24,7 +24,7 @@ See [`CONVENTION.md`](CONVENTION.md) and root `CLAUDE.md` / `.cursorrules`.
 | HTTP | `app/routers/` | Routing, request/response models, status codes |
 | Business | `app/services/` | Estimation orchestration, prompt assembly, LLM calls |
 | Context | `app/context/` | Static CAG data (examples, templates) — no HTTP or SDK imports |
-| Config | `app/config.py` | Settings from environment (`.env` locally, Infisical in deployed envs) |
+| Config | `app/config.py` | Settings from process env (`.env` or Infisical in dev; Infisical or platform env in prod) |
 | Entry | `app/main.py` | FastAPI app factory, router registration, health check |
 
 **Dependency rule (strict):**
@@ -172,16 +172,32 @@ updates and testing easier.
 
 ## Configuration
 
-| Variable | Purpose |
-|----------|---------|
-| `LLM_PROVIDER` | `openai`, `anthropic`, or `gemini` |
-| `OPENAI_API_KEY` | OpenAI credential |
-| `ANTHROPIC_API_KEY` | Anthropic credential |
-| `GOOGLE_API_KEY` | Gemini credential |
-| `LLM_MODEL` | Optional override; provider defaults apply if omitted |
+Settings load from the **process environment** via `pydantic-settings` ([`app/config.py`](../app/config.py)).
+The active `LLM_PROVIDER` must have its API key set at startup or configuration validation fails.
 
-Settings are loaded via `pydantic-settings` with `env_file=".env"` for local development. Production
-secrets should come from **Infisical** (see root `CLAUDE.md`), not committed files.
+### Sources
+
+| Source | When |
+|--------|------|
+| **Infisical** | Development or production/CI — `infisical run` injects vars before the process starts |
+| **Local `.env`** | Development when not using Infisical — loaded via `env_file=".env"` |
+
+**Precedence:** process environment overrides `.env` (Infisical-injected values win over stale local files).
+A missing `.env` file is fine when all variables come from Infisical or the shell.
+
+Infisical secret names must match `.env.example`. Do not commit `.env` (see `CLAUDE.md`).
+
+### Variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `LLM_PROVIDER` | `openai` | `openai`, `anthropic`, or `gemini` |
+| `LLM_MODEL` | `gpt-4o-mini` | Model id; per-provider defaults if unset in env |
+| `OPENAI_API_KEY` | — | Required when `LLM_PROVIDER=openai` |
+| `ANTHROPIC_API_KEY` | — | Required when `LLM_PROVIDER=anthropic` |
+| `GOOGLE_API_KEY` | — | Required when `LLM_PROVIDER=gemini` |
+| `APP_ENV` | `development` | Execution environment label |
+| `LOG_LEVEL` | `DEBUG` | Logging level (`DEBUG` … `CRITICAL`) |
 
 ---
 
