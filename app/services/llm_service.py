@@ -9,21 +9,20 @@ from app.context.examples import EXAMPLES
 
 LLMProvider = Literal["openai", "anthropic", "gemini"]
 
+_DEFAULT_MODELS: dict[LLMProvider, str] = {
+    "openai": "gpt-4o-mini",
+    "anthropic": "claude-3-5-haiku-latest",
+    "gemini": "gemini-2.0-flash",
+}
+
 
 def _resolve_model(provider: LLMProvider) -> str:
-    if settings.llm_model:
+    if "llm_model" in settings.model_fields_set:
         return settings.llm_model
-    if provider == "openai":
-        return "gpt-4o-mini"
-    if provider == "anthropic":
-        return "claude-3-5-haiku-latest"
-    return "gemini-2.0-flash"
+    return _DEFAULT_MODELS[provider]
 
 
 def _call_openai(prompt: str, model: str) -> str:
-    if not settings.openai_api_key:
-        raise ValueError("OPENAI_API_KEY is required when LLM_PROVIDER=openai.")
-
     from openai import OpenAI
 
     client = OpenAI(api_key=settings.openai_api_key)
@@ -35,9 +34,6 @@ def _call_openai(prompt: str, model: str) -> str:
 
 
 def _call_anthropic(prompt: str, model: str) -> str:
-    if not settings.anthropic_api_key:
-        raise ValueError("ANTHROPIC_API_KEY is required when LLM_PROVIDER=anthropic.")
-
     import anthropic
 
     client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
@@ -50,9 +46,6 @@ def _call_anthropic(prompt: str, model: str) -> str:
 
 
 def _call_gemini(prompt: str, model: str) -> str:
-    if not settings.google_api_key:
-        raise ValueError("GOOGLE_API_KEY is required when LLM_PROVIDER=gemini.")
-
     from google import genai
 
     client = genai.Client(api_key=settings.google_api_key)
@@ -79,4 +72,3 @@ async def estimate(user_input: str) -> dict:
     # EXAMPLES is wired in so CAG prompt assembly can be added next.
     _ = EXAMPLES
     return {"status": "not_implemented", "input": user_input}
-
