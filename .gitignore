@@ -20,9 +20,6 @@ wheels/
 # OS / tooling noise
 .DS_Store
 
-# Local docs drafts (not committed by default)
-docs/
-
 # Cursor / assistant config files
 .cursorrules
 .cursorignore
@@ -30,4 +27,6 @@ CLAUDE.md
 
 # Secrets (Infisical is source of truth)
 .env
-.env.*
+
+# Local tool config (do not commit)
+.infisical.json
