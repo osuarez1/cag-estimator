@@ -1,6 +1,6 @@
-## estimador-cag
+## cag-estimator
 
-`estimador-cag` is a small FastAPI service scaffolded to support a cache-augmented generation (CAG) workflow.
+`cag-estimator` is a small FastAPI service scaffolded to support a cache-augmented generation (CAG) workflow.
 
 ## Real usage (no mock)
 
@@ -41,7 +41,7 @@ Swagger UI is available at `/docs`.
 ## Project tree
 
 ```text
-estimador-cag/
+cag-estimator/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py

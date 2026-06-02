@@ -1,6 +1,6 @@
-## estimador-cag
+## cag-estimator
 
-`estimador-cag` es un pequeño servicio FastAPI diseñado como base para soportar un flujo de trabajo de generación aumentada con caché (CAG).
+`cag-estimator` es un pequeño servicio FastAPI diseñado como base para soportar un flujo de trabajo de generación aumentada con caché (CAG).
 
 ## Uso real (sin mock)
 
@@ -41,7 +41,7 @@ La Swagger UI está disponible en `/docs`.
 ## Árbol del proyecto
 
 ```text
-estimador-cag/
+cag-estimator/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py
