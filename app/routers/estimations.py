@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.services import llm_service
 
-router = APIRouter(prefix="/api/v1", tags=["estimations"])
+router = APIRouter(tags=["estimations"])
 
 
 class EstimateRequest(BaseModel):
