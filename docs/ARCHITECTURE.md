@@ -49,7 +49,14 @@ estimador-cag/
 │   ├── routers/
 │   │   └── estimations.py   # POST /estimations
 │   ├── services/
-│   │   └── llm_service.py   # complete(), estimate(), provider adapters
+│   │   ├── llm_service.py   # facade: complete()/stream_complete(), estimate()
+│   │   └── llm/             # provider adapters + shared types
+│   │       ├── types.py
+│   │       ├── pricing.py
+│   │       ├── errors.py
+│   │       ├── openai_provider.py
+│   │       ├── anthropic_provider.py
+│   │       └── gemini_provider.py
 │   └── context/
 │       └── examples.py      # EXAMPLES (CAG cache)
 ├── docs/
@@ -70,7 +77,15 @@ flowchart TB
   end
 
   subgraph business [Business layer]
-    llm[app/services/llm_service.py]
+    llmFacade[app/services/llm_service.py]
+    subgraph llmProviders [services/llm]
+      llmTypes[types.py]
+      llmPricing[pricing.py]
+      llmErrors[errors.py]
+      llmOpenAI[openai_provider.py]
+      llmAnthropic[anthropic_provider.py]
+      llmGemini[gemini_provider.py]
+    end
   end
 
   subgraph context [Context layer]
@@ -88,12 +103,13 @@ flowchart TB
   end
 
   main --> router
-  router --> llm
-  llm --> examples
-  llm --> settings
-  llm --> openai
-  llm --> anthropic
-  llm --> gemini
+  router --> llmFacade
+  llmFacade --> llmProviders
+  llmFacade --> examples
+  llmFacade --> settings
+  llmOpenAI --> openai
+  llmAnthropic --> anthropic
+  llmGemini --> gemini
   main --> settings
 ```
 
@@ -135,9 +151,9 @@ Runtime selection uses `LLM_PROVIDER` (`openai` | `anthropic` | `gemini`). API k
 flowchart LR
   estimate[estimate] --> complete[complete]
   complete --> dispatch{LLM_PROVIDER}
-  dispatch -->|openai| oa[_call_openai]
-  dispatch -->|anthropic| an[_call_anthropic]
-  dispatch -->|gemini| ge[_call_gemini]
+  dispatch -->|openai| oa[services/llm/openai_provider]
+  dispatch -->|anthropic| an[services/llm/anthropic_provider]
+  dispatch -->|gemini| ge[services/llm/gemini_provider]
   oa --> sdkO[openai SDK]
   an --> sdkA[anthropic SDK]
   ge --> sdkG[google-genai Client]
