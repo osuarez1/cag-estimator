@@ -163,8 +163,8 @@ flowchart LR
 | Provider | Env key | Default model if `LLM_MODEL` unset |
 |----------|---------|--------------------------------------|
 | `openai` | `OPENAI_API_KEY` | `gpt-4o-mini` |
-| `anthropic` | `ANTHROPIC_API_KEY` | `claude-3-5-haiku-latest` |
-| `gemini` | `GOOGLE_API_KEY` | `gemini-2.0-flash` |
+| `anthropic` | `ANTHROPIC_API_KEY` | `claude-haiku-4-5-20251001` |
+| `gemini` | `GOOGLE_API_KEY` | `gemini-2.5-flash` |
 | `mock` | — | `mock-1` |
 
 ---
