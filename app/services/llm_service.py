@@ -11,21 +11,29 @@ from typing import Literal
 
 from app.config import settings
 from app.context.examples import EXAMPLES
+from app.services.llm.pricing import PRICING
 from app.services.llm.types import LLMResult, LLMStreamChunk
 
 LLMProvider = Literal["openai", "anthropic", "gemini", "mock"]
 
+# Gemini 2.5 thinking models can consume much of the budget before visible output.
+_ESTIMATE_MAX_OUTPUT_TOKENS = 8192
+
 _DEFAULT_MODELS: dict[LLMProvider, str] = {
     "openai": "gpt-4o-mini",
-    "anthropic": "claude-3-5-haiku-latest",
-    "gemini": "gemini-2.0-flash",
+    "anthropic": "claude-haiku-4-5-20251001",
+    "gemini": "gemini-2.5-flash",
     "mock": "mock-1",
 }
 
 
 def _resolve_model(provider: LLMProvider) -> str:
+    if provider == "mock":
+        return _DEFAULT_MODELS["mock"]
     if "llm_model" in settings.model_fields_set:
-        return settings.llm_model
+        explicit = settings.llm_model
+        if explicit in PRICING.get(provider, {}):
+            return explicit
     return _DEFAULT_MODELS[provider]
 
 
@@ -226,7 +234,7 @@ async def estimate(user_input: str) -> dict:
         user_input,
         system_prompt=system_prompt,
         temperature=0.3,
-        max_output_tokens=1200,
+        max_output_tokens=_ESTIMATE_MAX_OUTPUT_TOKENS,
     )
     payload = result.to_dict()
     payload["estimation"] = payload.pop("content", "")
