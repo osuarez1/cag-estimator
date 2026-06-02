@@ -2,6 +2,26 @@
 
 `estimador-cag` is a small FastAPI service scaffolded to support a cache-augmented generation (CAG) workflow.
 
+## Real usage (no mock)
+
+To use a **real** provider (not `mock`), configure your credentials (Infisical or `.env`) and start the server **without** `LLM_PROVIDER=mock`.
+
+Start the server:
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+In another terminal, test the endpoint:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/estimate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transcription": "En la reunión con el equipo de marketing, el cliente explicó que necesita una landing page con formulario de contacto, integración con su CRM actual (HubSpot), y una sección de blog con editor WYSIWYG. El plazo ideal sería tenerlo listo en 4 semanas. El diseño ya existe en Figma."
+  }'
+```
+
 ## Quickstart
 
 Install dependencies:
