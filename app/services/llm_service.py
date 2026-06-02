@@ -1,11 +1,16 @@
-"""LLM provider dispatch (OpenAI, Anthropic, Gemini)."""
+"""LLM provider dispatch (OpenAI, Anthropic, Gemini).
+
+This is the public service facade. Provider SDK integration lives under `app/services/llm/`.
+"""
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from typing import Literal
 
 from app.config import settings
 from app.context.examples import EXAMPLES
+from app.services.llm.types import LLMResult, LLMStreamChunk
 
 LLMProvider = Literal["openai", "anthropic", "gemini"]
 
@@ -22,47 +27,132 @@ def _resolve_model(provider: LLMProvider) -> str:
     return _DEFAULT_MODELS[provider]
 
 
-def _call_openai(prompt: str, model: str) -> str:
-    from openai import OpenAI
-
-    client = OpenAI(api_key=settings.openai_api_key)
-    resp = client.responses.create(
-        model=model,
-        input=prompt,
-    )
-    return resp.output_text
-
-
-def _call_anthropic(prompt: str, model: str) -> str:
-    import anthropic
-
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
-    msg = client.messages.create(
-        model=model,
-        max_tokens=512,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "".join(block.text for block in msg.content if hasattr(block, "text"))
-
-
-def _call_gemini(prompt: str, model: str) -> str:
-    from google import genai
-
-    client = genai.Client(api_key=settings.google_api_key)
-    resp = client.models.generate_content(model=model, contents=prompt)
-    return resp.text or ""
-
-
-def complete(prompt: str) -> str:
+async def complete(
+    prompt: str,
+    *,
+    system_prompt: str | None = None,
+    model: str | None = None,
+    temperature: float = 0.3,
+    max_output_tokens: int = 1000,
+) -> LLMResult:
     provider = settings.llm_provider
-    model = _resolve_model(provider)
+    resolved_model = model or _resolve_model(provider)
+    if not settings.active_provider_api_key():
+        from app.services.llm.types import LLMError
+
+        return LLMResult(
+            provider=provider,
+            model=resolved_model,
+            error=LLMError(code="auth", message="Invalid or missing API key", provider=provider),
+        )
 
     if provider == "openai":
-        return _call_openai(prompt, model)
+        from app.services.llm.openai_provider import generate
+
+        return await generate(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
     if provider == "anthropic":
-        return _call_anthropic(prompt, model)
+        from app.services.llm.anthropic_provider import generate
+
+        return await generate(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
     if provider == "gemini":
-        return _call_gemini(prompt, model)
+        from app.services.llm.gemini_provider import generate
+
+        return await generate(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
+
+    raise ValueError(f"Unsupported LLM_PROVIDER: {provider!r}")
+
+
+async def complete_text(
+    prompt: str,
+    *,
+    system_prompt: str | None = None,
+    model: str | None = None,
+    temperature: float = 0.3,
+    max_output_tokens: int = 1000,
+) -> str:
+    result = await complete(
+        prompt,
+        system_prompt=system_prompt,
+        model=model,
+        temperature=temperature,
+        max_output_tokens=max_output_tokens,
+    )
+    return result.content
+
+
+async def stream_complete(
+    prompt: str,
+    *,
+    system_prompt: str | None = None,
+    model: str | None = None,
+    temperature: float = 0.3,
+    max_output_tokens: int = 1000,
+) -> AsyncIterator[LLMStreamChunk]:
+    provider = settings.llm_provider
+    resolved_model = model or _resolve_model(provider)
+    if not settings.active_provider_api_key():
+        from app.services.llm.types import LLMError
+
+        yield LLMStreamChunk(
+            done=True,
+            error=LLMError(code="auth", message="Invalid or missing API key", provider=provider),
+        )
+        return
+
+    if provider == "openai":
+        from app.services.llm.openai_provider import stream
+
+        async for chunk in stream(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        ):
+            yield chunk
+        return
+    if provider == "anthropic":
+        from app.services.llm.anthropic_provider import stream
+
+        async for chunk in stream(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        ):
+            yield chunk
+        return
+    if provider == "gemini":
+        from app.services.llm.gemini_provider import stream
+
+        async for chunk in stream(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        ):
+            yield chunk
+        return
 
     raise ValueError(f"Unsupported LLM_PROVIDER: {provider!r}")
 
