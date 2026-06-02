@@ -68,7 +68,7 @@ uv run python scripts/verify.py
 
 This script starts the API (default port `8001`), checks `/health` and `/docs`, then calls `POST /api/v1/estimate`
 using the transcript at [`exercises/transcripts/meeting_transcript.md`](exercises/transcripts/meeting_transcript.md).
-CI runs the same script via [`.github/workflows/verify.yml`](.github/workflows/verify.yml).
+Run it locally or from your CI system of choice.
 
 ## Setup & configuration
 
