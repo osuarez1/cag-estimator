@@ -57,6 +57,7 @@ cag-estimator/
 │       └── examples.py
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── ARCHITECTURE.es.md
 │   └── CONVENTION.md
 ├── exercises/
 │   ├── README.md
@@ -79,7 +80,7 @@ cag-estimator/
 Diseño por capas: `routers` → `services` → `context`, con despacho multi-proveedor de LLM en `app/services/llm_service.py`.
 
 Diagramas completos, flujos de request, tablas de proveedores y reglas de extensión:
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+[`docs/ARCHITECTURE.es.md`](docs/ARCHITECTURE.es.md).
 
 ## Verificación (“tests”)
 
@@ -164,6 +165,6 @@ Los mensajes de commit y los pull requests siguen [`docs/CONVENTION.md`](docs/CO
 modo imperativo y estructura de PR en GitHub). Los asistentes de código deberían leer ese archivo antes de redactar commits
 o descripciones de PR.
 
-Los cambios arquitectónicos deben actualizar [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) en el mismo conjunto de cambios
+Los cambios arquitectónicos deben actualizar [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) (y [`docs/ARCHITECTURE.es.md`](docs/ARCHITECTURE.es.md) si aplica) en el mismo conjunto de cambios
 (ver `CLAUDE.md` y `.cursorrules`).
 

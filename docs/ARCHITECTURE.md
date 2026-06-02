@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the **current** architecture of `estimador-cag`. It is the source of truth for
+This document describes the **current** architecture of `cag-estimator`. It is the source of truth for
 system structure, layer boundaries, and data flow.
 
 **Maintainers and coding assistants:** when you change boundaries (new layers, routers, services,
@@ -42,7 +42,7 @@ Routers must **not** import `app.context` directly. Services own prompt assembly
 ## Repository layout
 
 ```text
-estimador-cag/
+cag-estimator/
 ├── app/
 │   ├── main.py              # FastAPI app, /health
 │   ├── config.py            # pydantic-settings
@@ -60,7 +60,8 @@ estimador-cag/
 │   └── context/
 │       └── examples.py      # EXAMPLES (CAG cache)
 ├── docs/
-│   ├── ARCHITECTURE.md      # this file
+│   ├── ARCHITECTURE.md      # this file (English)
+│   ├── ARCHITECTURE.es.md   # Spanish translation
 │   └── CONVENTION.md
 └── pyproject.toml
 ```
@@ -237,3 +238,4 @@ When adding features, preserve layer boundaries:
 
 - [`CONVENTION.md`](CONVENTION.md) — commits, PRs, and doc-update expectations
 - [`../README.md`](../README.md) — setup, run commands, project tree
+- [`ARCHITECTURE.es.md`](ARCHITECTURE.es.md) — Spanish translation of this document

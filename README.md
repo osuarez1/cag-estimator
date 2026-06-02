@@ -57,6 +57,7 @@ cag-estimator/
 │       └── examples.py
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── ARCHITECTURE.es.md
 │   └── CONVENTION.md
 ├── exercises/
 │   ├── README.md
