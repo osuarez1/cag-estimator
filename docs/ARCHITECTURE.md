@@ -144,7 +144,7 @@ sequenceDiagram
 
 ## LLM provider dispatch
 
-Runtime selection uses `LLM_PROVIDER` (`openai` | `anthropic` | `gemini`). API keys are validated when
+Runtime selection uses `LLM_PROVIDER` (`openai` | `anthropic` | `gemini` | `mock`). API keys are validated when
 `complete()` runs, not at application import, so `/health` works with an empty `.env`.
 
 ```mermaid
@@ -154,6 +154,7 @@ flowchart LR
   dispatch -->|openai| oa[services/llm/openai_provider]
   dispatch -->|anthropic| an[services/llm/anthropic_provider]
   dispatch -->|gemini| ge[services/llm/gemini_provider]
+  dispatch -->|mock| mk[services/llm/mock_provider]
   oa --> sdkO[openai SDK]
   an --> sdkA[anthropic SDK]
   ge --> sdkG[google-genai Client]
@@ -164,6 +165,7 @@ flowchart LR
 | `openai` | `OPENAI_API_KEY` | `gpt-4o-mini` |
 | `anthropic` | `ANTHROPIC_API_KEY` | `claude-3-5-haiku-latest` |
 | `gemini` | `GOOGLE_API_KEY` | `gemini-2.0-flash` |
+| `mock` | — | `mock-1` |
 
 ---
 
@@ -189,7 +191,7 @@ updates and testing easier.
 ## Configuration
 
 Settings load from the **process environment** via `pydantic-settings` ([`app/config.py`](../app/config.py)).
-The active `LLM_PROVIDER` must have its API key set at startup or configuration validation fails.
+The active `LLM_PROVIDER` must have its API key set at startup (except `mock`).
 
 ### Sources
 
@@ -207,7 +209,7 @@ Infisical secret names must match `.env.example`. Do not commit `.env` (see `CLA
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
-| `LLM_PROVIDER` | `openai` | `openai`, `anthropic`, or `gemini` |
+| `LLM_PROVIDER` | `openai` | `openai`, `anthropic`, `gemini`, or `mock` |
 | `LLM_MODEL` | `gpt-4o-mini` | Model id; per-provider defaults if unset in env |
 | `OPENAI_API_KEY` | — | Required when `LLM_PROVIDER=openai` |
 | `ANTHROPIC_API_KEY` | — | Required when `LLM_PROVIDER=anthropic` |
