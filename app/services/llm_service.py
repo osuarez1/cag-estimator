@@ -199,19 +199,12 @@ async def estimate(user_input: str) -> dict:
         """
     ).strip()
 
-    provider: LLMProvider = settings.llm_provider
-    if provider == "openai":
-        resolved_model = "gpt-4o-mini"
-    elif provider == "anthropic":
-        resolved_model = "claude-haiku-4-5"
-    else:
-        resolved_model = None
-
-    result_text = await complete_text(
+    result = await complete(
         user_input,
         system_prompt=system_prompt,
-        model=resolved_model,
         temperature=0.3,
         max_output_tokens=1200,
     )
-    return {"estimation": result_text}
+    payload = result.to_dict()
+    payload["estimation"] = payload.pop("content", "")
+    return payload
