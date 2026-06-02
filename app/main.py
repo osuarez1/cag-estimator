@@ -9,12 +9,15 @@ from app.routers import estimations
 
 logging.basicConfig(level=getattr(logging, settings.log_level))
 logger = logging.getLogger(__name__)
-logger.info("Starting estimador-cag (APP_ENV=%s)", settings.app_env)
+logger.info("Starting cag-estimator (APP_ENV=%s)", settings.app_env)
 
-app = FastAPI(title="estimador-cag")
-app.include_router(estimations.router)
+app = FastAPI(
+    title="Software Estimation API",
+    description="API for generating project estimates using LLMs",
+)
+app.include_router(estimations.router, prefix="/api/v1")
 
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    return {"status": "ok", "service": "estimation-api"}
