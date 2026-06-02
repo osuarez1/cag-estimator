@@ -1,10 +1,13 @@
-"""Application settings loaded from environment."""
+"""Application settings loaded from environment.
+
+Note: API keys are not validated at import time so the app can start (e.g. `/health`)
+without secrets present. Provider-specific calls validate keys at runtime.
+"""
 
 from __future__ import annotations
 
 from typing import Literal, Self
 
-from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
@@ -34,14 +37,10 @@ class Settings(BaseSettings):
     app_env: str = "development"
     log_level: LogLevel = "DEBUG"
 
-    @model_validator(mode="after")
-    def require_active_provider_api_key(self) -> Self:
-        env_name, attr = _PROVIDER_KEY[self.llm_provider]
-        if not getattr(self, attr):
-            raise ValueError(
-                f"{env_name} is required when LLM_PROVIDER={self.llm_provider!r}."
-            )
-        return self
+    def active_provider_api_key(self) -> str | None:
+        _, attr = _PROVIDER_KEY[self.llm_provider]
+        val = getattr(self, attr)
+        return val or None
 
 
 settings = Settings()
