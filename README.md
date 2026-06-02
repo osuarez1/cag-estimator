@@ -63,7 +63,10 @@ estimador-cag/
 │   └── transcripts/
 │       └── meeting_transcript.md
 ├── scripts/
-│   └── verify.py
+│   ├── verify.py
+│   └── test_providers.py
+├── reports/
+│   └── providers/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -89,6 +92,24 @@ uv run python scripts/verify.py
 This script starts the API (default port `8001`), checks `/health` and `/docs`, then calls `POST /api/v1/estimate`
 using the transcript at [`exercises/transcripts/meeting_transcript.md`](exercises/transcripts/meeting_transcript.md).
 Run it locally or from your CI system of choice.
+
+### Compare all LLM providers
+
+To exercise every provider (`openai`, `anthropic`, `gemini`, `mock`) end-to-end and write one Markdown report per provider:
+
+```bash
+uv run python scripts/test_providers.py
+```
+
+Reports are written to `reports/providers/<provider>.md`. By default the script uses
+[`exercises/transcripts/meeting_transcript.md`](exercises/transcripts/meeting_transcript.md). Optional transcription input:
+
+```bash
+uv run python scripts/test_providers.py --transcription-file path/to/transcript.md
+uv run python scripts/test_providers.py --transcription "Meeting notes: ..."
+```
+
+Real providers require API keys (Infisical or `.env`). If a key is missing, the report records the API auth error instead of crashing.
 
 ## Setup & configuration
 

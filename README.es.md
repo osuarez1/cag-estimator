@@ -63,7 +63,10 @@ estimador-cag/
 │   └── transcripts/
 │       └── meeting_transcript.md
 ├── scripts/
-│   └── verify.py
+│   ├── verify.py
+│   └── test_providers.py
+├── reports/
+│   └── providers/
 ├── .env
 ├── .env.example
 ├── .gitignore
@@ -89,6 +92,24 @@ uv run python scripts/verify.py
 Este script levanta la API (puerto por defecto `8001`), comprueba `/health` y `/docs`, y luego llama a `POST /api/v1/estimate`
 usando la transcripción en [`exercises/transcripts/meeting_transcript.md`](exercises/transcripts/meeting_transcript.md).
 Ejecútalo localmente o desde tu sistema de CI preferido.
+
+### Comparar todos los proveedores LLM
+
+Para probar cada proveedor (`openai`, `anthropic`, `gemini`, `mock`) de extremo a extremo y generar un informe Markdown por proveedor:
+
+```bash
+uv run python scripts/test_providers.py
+```
+
+Los informes se escriben en `reports/providers/<provider>.md`. Por defecto el script usa
+[`exercises/transcripts/meeting_transcript.md`](exercises/transcripts/meeting_transcript.md). Transcripción opcional:
+
+```bash
+uv run python scripts/test_providers.py --transcription-file path/to/transcript.md
+uv run python scripts/test_providers.py --transcription "Notas de la reunión: ..."
+```
+
+Los proveedores reales requieren claves de API (Infisical o `.env`). Si falta una clave, el informe registra el error de autenticación de la API en lugar de fallar el script.
 
 ## Instalación y configuración
 
