@@ -6,6 +6,7 @@ This is the public service facade. Provider SDK integration lives under `app/ser
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from textwrap import dedent
 from typing import Literal
 
 from app.config import settings
@@ -158,7 +159,59 @@ async def stream_complete(
 
 
 async def estimate(user_input: str) -> dict:
-    # Scaffold: do not call real LLM by default.
-    # EXAMPLES is wired in so CAG prompt assembly can be added next.
-    _ = EXAMPLES
-    return {"status": "not_implemented", "input": user_input}
+    examples_lines: list[str] = []
+    for i, ex in enumerate(EXAMPLES, start=1):
+        meeting_summary = (ex.get("meeting_summary") or "").strip()
+        estimation = dedent(ex.get("estimation") or "").strip()
+        examples_lines.extend(
+            [
+                f"### Example {i}",
+                "",
+                "Meeting summary:",
+                meeting_summary,
+                "",
+                "Estimation (markdown):",
+                estimation,
+                "",
+                "---",
+                "",
+            ]
+        )
+    examples_block = "\n".join(examples_lines).strip()
+
+    system_prompt = dedent(
+        f"""
+        You are an expert software estimator.
+
+        Your job is to read a meeting transcript and produce a detailed software estimation in markdown,
+        grounded in the transcript and calibrated using the provided historical examples.
+
+        Output requirements:
+        - Return markdown only.
+        - Start with a clear title like: "## Estimation: <project name>"
+        - Include a "### Task Breakdown" section with numbered items and hours per task.
+        - Include totals and any relevant assumptions/risks.
+        - Include "Recommended team" and "Estimated duration" if reasonably inferable.
+        - Be specific and realistic; do not invent requirements not supported by the transcript.
+
+        ## Reference examples (historical)
+        {examples_block}
+        """
+    ).strip()
+
+    provider: LLMProvider = settings.llm_provider
+    if provider == "openai":
+        resolved_model = "gpt-4o-mini"
+    elif provider == "anthropic":
+        resolved_model = "claude-haiku-4-5"
+    else:
+        resolved_model = None
+
+    result_text = await complete_text(
+        user_input,
+        system_prompt=system_prompt,
+        model=resolved_model,
+        temperature=0.3,
+        max_output_tokens=1200,
+    )
+    return {"estimation": result_text}
