@@ -27,3 +27,6 @@ CLAUDE.md
 
 # Secrets (Infisical is source of truth)
 .env
+
+# Local tool config (do not commit)
+.infisical.json
