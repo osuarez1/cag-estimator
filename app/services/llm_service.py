@@ -13,12 +13,13 @@ from app.config import settings
 from app.context.examples import EXAMPLES
 from app.services.llm.types import LLMResult, LLMStreamChunk
 
-LLMProvider = Literal["openai", "anthropic", "gemini"]
+LLMProvider = Literal["openai", "anthropic", "gemini", "mock"]
 
 _DEFAULT_MODELS: dict[LLMProvider, str] = {
     "openai": "gpt-4o-mini",
     "anthropic": "claude-3-5-haiku-latest",
     "gemini": "gemini-2.0-flash",
+    "mock": "mock-1",
 }
 
 
@@ -38,7 +39,7 @@ async def complete(
 ) -> LLMResult:
     provider = settings.llm_provider
     resolved_model = model or _resolve_model(provider)
-    if not settings.active_provider_api_key():
+    if provider != "mock" and not settings.active_provider_api_key():
         from app.services.llm.types import LLMError
 
         return LLMResult(
@@ -47,6 +48,16 @@ async def complete(
             error=LLMError(code="auth", message="Invalid or missing API key", provider=provider),
         )
 
+    if provider == "mock":
+        from app.services.llm.mock_provider import generate
+
+        return await generate(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        )
     if provider == "openai":
         from app.services.llm.openai_provider import generate
 
@@ -109,7 +120,7 @@ async def stream_complete(
 ) -> AsyncIterator[LLMStreamChunk]:
     provider = settings.llm_provider
     resolved_model = model or _resolve_model(provider)
-    if not settings.active_provider_api_key():
+    if provider != "mock" and not settings.active_provider_api_key():
         from app.services.llm.types import LLMError
 
         yield LLMStreamChunk(
@@ -118,6 +129,18 @@ async def stream_complete(
         )
         return
 
+    if provider == "mock":
+        from app.services.llm.mock_provider import stream
+
+        async for chunk in stream(
+            prompt,
+            system=system_prompt,
+            model=resolved_model,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
+        ):
+            yield chunk
+        return
     if provider == "openai":
         from app.services.llm.openai_provider import stream
 
